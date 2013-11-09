@@ -8,20 +8,18 @@ text3 = "CTTTACTTTAAGGCGTTACTTAGTGCACAGTTTGTATACAGGTATACAGGTATACAGAGGCGTAGGCGTGC
 # Counter
 # length
 
+
 def find_frequent_words(sequence, length):
-    cnt = Counter()
+    counter = Counter()
     position = 0
     while position < (len(sequence) - length):
         nmer = sequence[position:position+length]
-        #print(nmer)
-        cnt[nmer] += 1
+        counter[nmer] += 1
         position += 1
-    return cnt
+    return counter
 
 
 
-#cnt = find_frequent_words(text, 4)
-#cnt = find_frequent_words(text2, 12)
 cnt = find_frequent_words(text3, 11)
 
 highest_frequency = cnt.most_common(1)[0][1]
