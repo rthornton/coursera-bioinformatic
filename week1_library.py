@@ -100,3 +100,19 @@ def find_clumps(genome, kmer_length, window_length, minimum_frequency):
 
 
     return sorted(results)
+
+
+def skew_prefix(genome, prefix):
+    position = 0
+    skew_prefix_values = []
+    skew_prefix_values.append(0)
+    while position < len(genome) and position < prefix:
+        if genome[position] == 'C':
+            skew_prefix_values.append(skew_prefix_values[position] - 1)
+        elif genome[position] == 'G':
+            skew_prefix_values.append(skew_prefix_values[position] + 1)
+        else:
+            skew_prefix_values.append(skew_prefix_values[position])
+        position += 1
+
+    return skew_prefix_values
