@@ -116,3 +116,26 @@ def skew_prefix(genome, prefix):
         position += 1
 
     return skew_prefix_values
+
+
+def find_approximate_pattern_matches(pattern, genome, allowed_mismatches):
+    partial_matches = list()
+    position = 0
+    pattern_length = len(pattern)
+    while position <= (len(genome) - pattern_length):
+        kmer = genome[position:position + pattern_length]
+        kmer_position = 0
+        kmer_mismatches = 0
+        while kmer_position < len(kmer):
+            if kmer[kmer_position] != pattern[kmer_position]:
+                kmer_mismatches += 1
+
+            if kmer_mismatches > allowed_mismatches:
+                break
+            if kmer_position == len(kmer) - 1:
+                partial_matches.append(position)
+            kmer_position += 1
+
+        position += 1
+
+    return partial_matches
