@@ -118,24 +118,96 @@ def skew_prefix(genome, prefix):
     return skew_prefix_values
 
 
+def is_approx_match(pattern, text, allowed_mismatches):
+    pos = 0
+    mismatches = 0
+    while pos < len(text):
+        if text[pos] != pattern[pos]:
+            mismatches += 1
+
+        if mismatches > allowed_mismatches:
+            break
+        if pos == len(text) - 1:
+            return True
+
+        pos += 1
+
+    return False
+
+
 def find_approximate_pattern_matches(pattern, genome, allowed_mismatches):
     partial_matches = list()
     position = 0
     pattern_length = len(pattern)
     while position <= (len(genome) - pattern_length):
         kmer = genome[position:position + pattern_length]
-        kmer_position = 0
-        kmer_mismatches = 0
-        while kmer_position < len(kmer):
-            if kmer[kmer_position] != pattern[kmer_position]:
-                kmer_mismatches += 1
-
-            if kmer_mismatches > allowed_mismatches:
-                break
-            if kmer_position == len(kmer) - 1:
-                partial_matches.append(position)
-            kmer_position += 1
+        if is_approx_match(pattern, kmer, allowed_mismatches) is True:
+            partial_matches.append(position)
 
         position += 1
 
     return partial_matches
+
+
+def mutate_kmer_at_position(kmer, position):
+    real_value = kmer[position]
+    end = len(kmer)
+    mutations = list()
+    if real_value == "A":
+        mutations.append(kmer[0:position] + "C" + kmer[position+1:end])
+        mutations.append(kmer[0:position] + "G" + kmer[position+1:end])
+        mutations.append(kmer[0:position] + "T" + kmer[position+1:end])
+    elif real_value == "C":
+        mutations.append(kmer[0:position] + "A" + kmer[position+1:end])
+        mutations.append(kmer[0:position] + "G" + kmer[position+1:end])
+        mutations.append(kmer[0:position] + "T" + kmer[position+1:end])
+    elif real_value == "G":
+        mutations.append(kmer[0:position] + "A" + kmer[position+1:end])
+        mutations.append(kmer[0:position] + "C" + kmer[position+1:end])
+        mutations.append(kmer[0:position] + "T" + kmer[position+1:end])
+    elif real_value == "T":
+        mutations.append(kmer[0:position] + "A" + kmer[position+1:end])
+        mutations.append(kmer[0:position] + "C" + kmer[position+1:end])
+        mutations.append(kmer[0:position] + "G" + kmer[position+1:end])
+
+    return mutations
+
+
+def mutate_kmer(kmer, allowed_mismatches):
+    mutations = list()
+    position = 0
+    while position <= len(kmer):
+        # for each position do a mutation, up to 3
+        # Do pos 0, then 1, then 2, then 1, 2, 3, then 0, 2, 3
+        mutations.extend(mutate_kmer_at_position(kmer, position))
+
+
+from itertools import product
+
+
+def create_possible_kmers(k):
+    possibles = list()
+    charSet = 'ATCG'
+    for wordchars in product(charSet, repeat=k):
+        possibles.append(''.join(wordchars))
+
+    return possibles
+
+
+def find_frequent_words_with_mismatches(genome, k, allowed_mismatches):
+    exacts = find_kmers_with_frequency_count(genome, k)
+    possible_kmers = create_possible_kmers(k)
+
+    exacts_to_possible_matches = dict()
+    possibles_that_are_approx = list()
+
+    # for each possible_match, call is_approx_match on it, if so, track
+    for i in exacts:
+        for j in possible_kmers:
+            if is_approx_match(i, j, allowed_mismatches):
+                #exacts_to_possible_matches[i].append(j)
+                possibles_that_are_approx.append(j)
+
+
+
+    return matches
