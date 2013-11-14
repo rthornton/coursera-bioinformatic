@@ -7,7 +7,7 @@ def find_kmers_with_frequency_count(sequence, length):
     counter = Counter()
     position = 0
 
-    while position < (len(sequence) - length):
+    while position <= (len(sequence) - length):
         nmer = sequence[position:position+length]
         counter[nmer] += 1
         position += 1
@@ -149,65 +149,59 @@ def find_approximate_pattern_matches(pattern, genome, allowed_mismatches):
     return partial_matches
 
 
-def mutate_kmer_at_position(kmer, position):
-    real_value = kmer[position]
-    end = len(kmer)
-    mutations = list()
-    if real_value == "A":
-        mutations.append(kmer[0:position] + "C" + kmer[position+1:end])
-        mutations.append(kmer[0:position] + "G" + kmer[position+1:end])
-        mutations.append(kmer[0:position] + "T" + kmer[position+1:end])
-    elif real_value == "C":
-        mutations.append(kmer[0:position] + "A" + kmer[position+1:end])
-        mutations.append(kmer[0:position] + "G" + kmer[position+1:end])
-        mutations.append(kmer[0:position] + "T" + kmer[position+1:end])
-    elif real_value == "G":
-        mutations.append(kmer[0:position] + "A" + kmer[position+1:end])
-        mutations.append(kmer[0:position] + "C" + kmer[position+1:end])
-        mutations.append(kmer[0:position] + "T" + kmer[position+1:end])
-    elif real_value == "T":
-        mutations.append(kmer[0:position] + "A" + kmer[position+1:end])
-        mutations.append(kmer[0:position] + "C" + kmer[position+1:end])
-        mutations.append(kmer[0:position] + "G" + kmer[position+1:end])
-
-    return mutations
+def mutate_char(nucleotide):
+    if nucleotide == "A":
+        return ["C", "G", "T"]
+    elif nucleotide == "C":
+        return ["A", "G", "T"]
+    elif nucleotide == "G":
+        return ["A", "C", "T"]
+    elif nucleotide == "T":
+        return ["A", "C", "G"]
 
 
-def mutate_kmer(kmer, allowed_mismatches):
-    mutations = list()
+def recursive_mismatches(kmer, position, allowed_mismatches, mismatches):
+    if position < len(kmer) and allowed_mismatches > 0:
+        mutations = mutate_char(kmer[position])
+        k = len(kmer)
+        for m in mutations:
+            mismatches.append(kmer[0:position] + m + kmer[position+1:k])
+            recursive_mismatches(kmer[0:position] + m + kmer[position+1:k], position + 1, allowed_mismatches - 1, mismatches)
+        recursive_mismatches(kmer, position + 1, allowed_mismatches, mismatches)
+    return mismatches
+
+
+def generate_mutations_for_kmer(kmer, allowed_mismatches):
+    return recursive_mismatches(kmer, 0, allowed_mismatches, [])
+
+
+def find_kmers_with_frequency_count_with_mismatch(genome, k, allowed_mismatches):
+    counter = Counter()
+    highest = 0
     position = 0
-    while position <= len(kmer):
-        # for each position do a mutation, up to 3
-        # Do pos 0, then 1, then 2, then 1, 2, 3, then 0, 2, 3
-        mutations.extend(mutate_kmer_at_position(kmer, position))
 
+    while position <= (len(genome) - k):
+        nmer = genome[position:position+k]
+        counter[nmer] += 1
+        if counter[nmer] > highest:
+            highest = counter[nmer]
 
-from itertools import product
+        mismatches = generate_mutations_for_kmer(nmer, allowed_mismatches)
+        for mm in mismatches:
+            counter[mm] += 1
+            if counter[mm] > highest:
+                highest = counter[mm]
 
+        position += 1
 
-def create_possible_kmers(k):
-    possibles = list()
-    charSet = 'ATCG'
-    for wordchars in product(charSet, repeat=k):
-        possibles.append(''.join(wordchars))
-
-    return possibles
+    return (highest, counter)
 
 
 def find_frequent_words_with_mismatches(genome, k, allowed_mismatches):
-    exacts = find_kmers_with_frequency_count(genome, k)
-    possible_kmers = create_possible_kmers(k)
+    (highest, counter) = find_kmers_with_frequency_count_with_mismatch(genome, k, allowed_mismatches)
+    return_list = []
+    for kmer in counter.keys():
+        if counter[kmer] == highest:
+            return_list.append(kmer)
 
-    exacts_to_possible_matches = dict()
-    possibles_that_are_approx = list()
-
-    # for each possible_match, call is_approx_match on it, if so, track
-    for i in exacts:
-        for j in possible_kmers:
-            if is_approx_match(i, j, allowed_mismatches):
-                #exacts_to_possible_matches[i].append(j)
-                possibles_that_are_approx.append(j)
-
-
-
-    return matches
+    return sorted(return_list)
