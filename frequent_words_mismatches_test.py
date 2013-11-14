@@ -3,7 +3,7 @@ __author__ = 'rob'
 import unittest
 from itertools import product
 
-from week1_library import find_frequent_words_with_mismatches, generate_mutations_for_kmer
+from week1_library import find_frequent_words_with_mismatches, generate_mutations_for_kmer, find_frequent_words_with_mismatches_and_reverse_complements
 
 class TestSequenceFunctions(unittest.TestCase):
 
@@ -40,5 +40,20 @@ class TestSequenceFunctions(unittest.TestCase):
     def test_submittal(self):
         matches = find_frequent_words_with_mismatches("TAACTAGTAGCCCAGTAGCGCCCACCCATAACTAGTAGTAACTAGAGCGTAGAGCGAGCGGTGTCCCAAGCGAGCGTAACAGCGGTCCCACCCAAGCGAGCGCCCACCCACCCAGTCCCAGTTAACCCCAGTAGCGGTTAGTAACCCCAAGCGGTAGCGTAGCCCAAGCGAGCGAGCGGTAGCGCCCATAACTAACGTCCCACCCAAGCGAGCGAGCGGTAGCGGTAGCGTAGTAGGTAGCGCCCAGTAGCGCCCAGTCCCACCCATAACAGCGTAACTAACGTAGCGTAGGTGTTAACCCCAGTAGCGTAACTAGTAACGTTAACCCCACCCAAGCGCCCAGTTAACGTAGCGAGCGAGCGAGCGTAGCCCATAAC", 8, 2)
         self.assertEqual("CGCTAGCG", " ".join(matches))
+
+
+    def test_sample_1_reverse_complement(self):
+        matches = find_frequent_words_with_mismatches_and_reverse_complements("ACGTTGCATGTCGCATGATGCATGAGAGCT", 4, 1)
+        self.assertEqual("ACAT ATGT", " ".join(matches))
+
+
+    def test_extra_dataset_reverse_complement(self):
+        matches = find_frequent_words_with_mismatches_and_reverse_complements("CTTGCCGGCGCCGATTATACGATCGCGGCCGCTTGCCTTCTTTATAATGCATCGGCGCCGCGATCTTGCTATATACGTACGCTTCGCTTGCATCTTGCGCGCATTACGTACTTATCGATTACTTATCTTCGATGCCGGCCGGCATATGCCGCTTTAGCATCGATCGATCGTACTTTACGCGTATAGCCGCTTCGCTTGCCGTACGCGATGCTAGCATATGCTAGCGCTAATTACTTAT", 9, 3)
+        self.assertEqual("AGCGCCGCT AGCGGCGCT", " ".join(matches))
+
+
+    def test_submittal_reverse_complement(self):
+        matches = find_frequent_words_with_mismatches_and_reverse_complements("CTGCTGCTGTCCTACTACCCGCCGTCTACTCCTGTCCTGCCGCCTCTCCCGTCCTGCCTGCTGCCGTACCTGTACTACCCCGTACTACTACCTACTCTCTACCCGCCGCCGCCCGCCGTCTACCTGTCTACCTCCCTGTACCTACTCTACTACCCGTCTACTACTACTCCTCTACCCCGTCCTGTCCTGTACCTACCCCTGCCTGCTCCCGCCCG", 8, 3)
+        self.assertEqual("CCCCCCCC GGGGGGGG", " ".join(matches))
 
 

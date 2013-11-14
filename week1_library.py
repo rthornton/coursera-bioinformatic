@@ -175,22 +175,29 @@ def generate_mutations_for_kmer(kmer, allowed_mismatches):
     return recursive_mismatches(kmer, 0, allowed_mismatches, [])
 
 
-def find_kmers_with_frequency_count_with_mismatch(genome, k, allowed_mismatches):
+def count_kmer_and_mismatches(allowed_mismatches, counter, highest, nmer):
+    counter[nmer] += 1
+    if counter[nmer] > highest:
+        highest = counter[nmer]
+    mismatches = generate_mutations_for_kmer(nmer, allowed_mismatches)
+    for mm in mismatches:
+        counter[mm] += 1
+        if counter[mm] > highest:
+            highest = counter[mm]
+    return highest
+
+
+def find_kmers_with_frequency_count_with_mismatch(genome, k, allowed_mismatches, use_reverse_complement = False):
     counter = Counter()
     highest = 0
     position = 0
 
     while position <= (len(genome) - k):
         nmer = genome[position:position+k]
-        counter[nmer] += 1
-        if counter[nmer] > highest:
-            highest = counter[nmer]
+        highest = count_kmer_and_mismatches(allowed_mismatches, counter, highest, nmer)
 
-        mismatches = generate_mutations_for_kmer(nmer, allowed_mismatches)
-        for mm in mismatches:
-            counter[mm] += 1
-            if counter[mm] > highest:
-                highest = counter[mm]
+        if use_reverse_complement is True:
+            highest = count_kmer_and_mismatches(allowed_mismatches, counter, highest, create_reverse_complement(nmer))
 
         position += 1
 
@@ -205,3 +212,23 @@ def find_frequent_words_with_mismatches(genome, k, allowed_mismatches):
             return_list.append(kmer)
 
     return sorted(return_list)
+
+
+def find_frequent_words_with_mismatches_and_reverse_complements(genome, k, allowed_mismatches):
+    (highest, counter) = find_kmers_with_frequency_count_with_mismatch(genome, k, allowed_mismatches, True)
+    return_list = []
+    for kmer in counter.keys():
+        if counter[kmer] == highest:
+            return_list.append(kmer)
+
+    return sorted(return_list)
+
+
+def create_reverse_complement(genome):
+    complements = {'A': 'T', 'C': 'G', 'T': 'A', 'G': 'C'}
+
+    nucleotides = list(genome)
+    reverseComplement = ""
+    for nucl in nucleotides:
+        reverseComplement += complements[nucl]
+    return reverseComplement[::-1]
