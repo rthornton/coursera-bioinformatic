@@ -1,7 +1,7 @@
 __author__ = 'rob'
 
 import unittest
-from week2.week2_library import find_nmers_for_peptide, walk_reading_frame_for_sequences
+from week2.week2_library import find_nmers_for_peptide, walk_reading_frame_for_sequences, convert_peptide_to_possible_sequences
 
 class TestSequenceFunctions(unittest.TestCase):
 
@@ -14,4 +14,5 @@ class TestSequenceFunctions(unittest.TestCase):
     def walk_reading_frame_for_sequences(self):
         frame = ""
         peptide = "MA"
-
+        possible_sequences = convert_peptide_to_possible_sequences(peptide)
+        self.assertEqual()

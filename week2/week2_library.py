@@ -114,12 +114,14 @@ def walk_reading_frame_for_sequences(reading_frame, sequences):
     return []
 
 
-def convert_peptide_to_possible_sequences(sequences, peptide, position):
+def convert_peptide_to_possible_sequences_r(sequences, peptide, position):
     if position <= len(peptide):
         rnas = aa_to_rna.get(peptide[position])
+        position += 1
         for rna in rnas:
             for sequence in sequences:
-                sequence.append(rna).append()
+                sequence.append(rna)
+                convert_peptide_to_possible_sequences_r(sequences, peptide, position)
 
     return sequences
 
@@ -128,9 +130,10 @@ def convert_peptide_to_possible_sequences(peptide):
     # Backwards to RNA, then convert U to T
     sequences = []
     position = 0
-    while position <= len(peptide):
-        rnas = aa_to_rna.get(peptide[position])
-        for rna in rnas:
+    rnas = aa_to_rna.get(peptide[position])
+    for rna in rnas:
+        sequences.append(rna)
+        convert_peptide_to_possible_sequences_r(sequences, peptide, 1)
 
     return sequences
 
