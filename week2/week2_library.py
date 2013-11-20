@@ -68,26 +68,26 @@ codon_to_aa = {
 }
 
 aa_to_rna = {
-    'A': ['GCU, GCC, GCA, GCG'],
-    'L': ['UUA, UUG, CUU, CUC, CUA, CUG'],
-    'R': ['CGU, CGC, CGA, CGG, AGA, AGG'],
-    'K': ['AAA, AAG'],
-    'N': ['AAU, AAC'],
+    'A': ['GCU', 'GCC', 'GCA', 'GCG'],
+    'L': ['UUA', 'UUG', 'CUU', 'CUC', 'CUA', 'CUG'],
+    'R': ['CGU', 'CGC', 'CGA', 'CGG', 'AGA', 'AGG'],
+    'K': ['AAA', 'AAG'],
+    'N': ['AAU', 'AAC'],
     'M': ['AUG'],
-    'D': ['GAU, GAC'],
-    'F': ['UUU, UUC'],
-    'C': ['UGU, UGC'],
-    'P': ['CCU, CCC, CCA, CCG'],
-    'Q': ['CAA, CAG'],
-    'S': ['UCU, UCC, UCA, UCG, AGU,AGC'],
-    'E': ['GAA, GAG'],
-    'T': ['ACU, ACC, ACA, ACG'],
-    'G': ['GGU, GGC, GGA, GGG'],
+    'D': ['GAU', 'GAC'],
+    'F': ['UUU', 'UUC'],
+    'C': ['UGU', 'UGC'],
+    'P': ['CCU', 'CCC', 'CCA', 'CCG'],
+    'Q': ['CAA', 'CAG'],
+    'S': ['UCU', 'UCC', 'UCA', 'UCG', 'AGU', 'AGC'],
+    'E': ['GAA', 'GAG'],
+    'T': ['ACU', 'ACC', 'ACA', 'ACG'],
+    'G': ['GGU', 'GGC', 'GGA', 'GGG'],
     'W': ['UGG'],
-    'H': ['CAU, CAC'],
-    'Y': ['UAU, UAC'],
-    'I': ['AUU, AUC, AUA'],
-    'V': ['GUU, GUC, GUA, GUG']
+    'H': ['CAU', 'CAC'],
+    'Y': ['UAU', 'UAC'],
+    'I': ['AUU', 'AUC', 'AUA'],
+    'V': ['GUU', 'GUC', 'GUA', 'GUG']
 
 #Start 	AUG 	Stop 	UAG, UGA, UAA
 }
@@ -115,13 +115,19 @@ def walk_reading_frame_for_sequences(reading_frame, sequences):
 
 
 def convert_peptide_to_possible_sequences_r(sequences, peptide, position):
-    if position <= len(peptide):
+    if position < len(peptide):
         rnas = aa_to_rna.get(peptide[position])
         position += 1
-        for rna in rnas:
-            for sequence in sequences:
-                sequence.append(rna)
-                convert_peptide_to_possible_sequences_r(sequences, peptide, position)
+        sequences *= len(rnas)
+        rna_index = 0
+        while rna_index < len(rnas):
+            sequences[rna_index] += rnas[rna_index]
+            rna_index += 1
+            #while sequence_index < len(sequences):
+            ##for sequence in sequences:
+            #    sequences[sequence_index] += rna
+            #    convert_peptide_to_possible_sequences_r(sequences, peptide, position)
+            #    sequence_index += 1
 
     return sequences
 
@@ -136,6 +142,28 @@ def convert_peptide_to_possible_sequences(peptide):
         convert_peptide_to_possible_sequences_r(sequences, peptide, 1)
 
     return sequences
+
+
+class Node:
+    children = []
+
+
+def build_tree(peptide):
+    position = 0
+    head = Node()
+    current_node = head
+    while position < len(peptide):
+        current_node.children = aa_to_rna.get(peptide[position])
+
+
+
+def recursive_dfs(graph, start, path=[]):
+    '''recursive depth first search from start'''
+    path = path + [start]
+    for node in graph[start]:
+        if not node in path:
+            path = recursive_dfs(graph, node, path)
+    return path
 
 
 def find_nmers_for_peptide(genome, peptide):
